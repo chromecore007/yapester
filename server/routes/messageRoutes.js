@@ -4,6 +4,29 @@ const Message = require("../models/Message");
 const protect = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 
+router.get("/unread/count", protect, async (req, res) => {
+  try {
+    const counts = await Message.aggregate([
+      {
+        $match: {
+          receiver: new mongoose.Types.ObjectId(req.user._id),
+          status: { $ne: "seen" },
+        },
+      },
+      {
+        $group: {
+          _id: "$sender",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.json(counts);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to get unread counts" });
+  }
+});
+
 router.get("/:userId", protect, async (req, res) => {
   try {
     const userA = req.user._id.toString();
