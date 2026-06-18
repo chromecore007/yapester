@@ -75,6 +75,9 @@ io.on("connection", (socket) => {
         ...msg._doc,
         status: "delivered",
       });
+      io.to(receiver).emit("unreadIncrement", {
+  senderId: sender,
+});
     } catch (err) {
       console.error("❌ Message error:", err.message);
     }
