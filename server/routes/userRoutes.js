@@ -7,7 +7,7 @@ const protect = require("../middleware/authMiddleware");
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .select("_id name username email");
+      .select("_id name username email profilePic");
 
     res.json(user);
   } catch (error) {
@@ -43,7 +43,7 @@ router.put("/profile-pic", protect, async (req, res) => {
 router.get("/", protect, async (req, res) => {
   try {
     const users = await User.find()
-      .select("_id name username email");
+     .select("_id name username email profilePic");
 
     res.json(users);
   } catch (error) {
