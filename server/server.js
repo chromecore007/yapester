@@ -16,11 +16,12 @@ const app = express();
 /* ================= CORS (API) ================= */
 app.use(
   cors({
-    origin: "*", // 🔥 Vercel / any frontend
-    methods: ["GET", "POST"],
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.options("*", cors());
 
 app.use(express.json());
 
@@ -34,10 +35,10 @@ const server = http.createServer(app);
 
 /* ================= SOCKET.IO ================= */
 const io = new Server(server, {
-  cors: {
-    origin: "*", // 🔥 IMPORTANT (localhost hata diya)
-    methods: ["GET", "POST"],
-  },
+ cors: {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+},
 });
 
 const onlineUsers = new Set();
