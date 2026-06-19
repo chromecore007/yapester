@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Message = require("../models/Message");
 const protect = require("../middleware/authMiddleware");
+const User = require("../models/User");
 const mongoose = require("mongoose");
 
 router.get("/unread/count", protect, async (req, res) => {
@@ -24,6 +25,41 @@ router.get("/unread/count", protect, async (req, res) => {
     res.json(counts);
   } catch (err) {
     res.status(500).json({ message: "Failed to get unread counts" });
+  }
+});
+router.get("/chats/list", protect, async (req, res) => {
+  try {
+    const currentUserId = req.user._id.toString();
+
+    const messages = await Message.find({
+      $or: [
+        { sender: currentUserId },
+        { receiver: currentUserId },
+      ],
+    });
+
+    const userIds = new Set();
+
+    messages.forEach((msg) => {
+      if (msg.sender.toString() !== currentUserId) {
+        userIds.add(msg.sender.toString());
+      }
+
+      if (msg.receiver.toString() !== currentUserId) {
+        userIds.add(msg.receiver.toString());
+      }
+    });
+
+    const users = await User.find({
+      _id: { $in: [...userIds] },
+    }).select("_id name username email");
+
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to fetch chats",
+    });
   }
 });
 
