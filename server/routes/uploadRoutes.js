@@ -8,34 +8,54 @@ const upload = multer({ storage });
 
 router.post("/", upload.single("file"), async (req, res) => {
   try {
+    console.log("========== UPLOAD REQUEST ==========");
+    console.log("Headers:", req.headers);
+    console.log("Body:", req.body);
+    console.log("File:", req.file);
+
     if (!req.file) {
-      return res.status(400).json({ message: "No file received" });
+      return res.status(400).json({
+        success: false,
+        message: "No file received",
+      });
     }
 
     const isPdf = req.file.mimetype === "application/pdf";
 
-    cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: isPdf ? "raw" : "auto",
-        format: isPdf ? "pdf" : undefined,
-        content_type: req.file.mimetype, // 🔥 MOST IMPORTANT LINE
+        resource_type: isPdf ? "raw" : "image",
+        folder: "yapester",
       },
       (error, result) => {
         if (error) {
-          console.error("Cloudinary error 👉", error);
-          return res.status(500).json({ message: "Upload failed" });
+          console.error("Cloudinary Error:", error);
+
+          return res.status(500).json({
+            success: false,
+            message: "Cloudinary upload failed",
+            error: error.message,
+          });
         }
 
-        res.json({
+        console.log("Upload Success:", result.secure_url);
+
+        return res.status(200).json({
+          success: true,
           url: result.secure_url,
-          fileType: result.resource_type,
+          public_id: result.public_id,
         });
       }
-    ).end(req.file.buffer);
+    );
 
+    stream.end(req.file.buffer);
   } catch (err) {
-    console.error("Upload route error 👉", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Upload Route Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 
