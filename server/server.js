@@ -4,7 +4,8 @@ const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
-
+const path = require("path");
+const uploadRoutes = require("./routes/uploadRoutes");
 const Message = require("./models/Message");
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 app.use("/api/follow", require("./routes/followRoutes"));
+app.use("/api/upload", uploadRoutes);
 
 const server = http.createServer(app);
 
