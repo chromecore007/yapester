@@ -36,25 +36,36 @@ router.get("/chats/list", protect, async (req, res) => {
         { sender: currentUserId },
         { receiver: currentUserId },
       ],
-    });
+    }).sort({ createdAt: -1 });
 
-    const userIds = new Set();
+    const chatMap = new Map();
 
-    messages.forEach((msg) => {
-      if (msg.sender.toString() !== currentUserId) {
-        userIds.add(msg.sender.toString());
+    for (const msg of messages) {
+      const otherUserId =
+        msg.sender.toString() === currentUserId
+          ? msg.receiver.toString()
+          : msg.sender.toString();
+
+      if (!chatMap.has(otherUserId)) {
+        chatMap.set(otherUserId, msg);
       }
-
-      if (msg.receiver.toString() !== currentUserId) {
-        userIds.add(msg.receiver.toString());
-      }
-    });
+    }
 
     const users = await User.find({
-      _id: { $in: [...userIds] },
+      _id: { $in: [...chatMap.keys()] },
     }).select("_id name username email profilePic");
 
-    res.json(users);
+    const chats = users.map((user) => {
+      const lastMessage = chatMap.get(user._id.toString());
+
+      return {
+        ...user.toObject(),
+        lastMessage: lastMessage?.text || "",
+        lastMessageTime: lastMessage?.createdAt || null,
+      };
+    });
+
+    res.json(chats);
   } catch (err) {
     console.error(err);
     res.status(500).json({
