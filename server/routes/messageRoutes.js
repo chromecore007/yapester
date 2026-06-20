@@ -52,7 +52,7 @@ router.get("/chats/list", protect, async (req, res) => {
 
     const users = await User.find({
       _id: { $in: [...userIds] },
-    }).select("_id name username email");
+    }).select("_id name username email profilePic");
 
     res.json(users);
   } catch (err) {
