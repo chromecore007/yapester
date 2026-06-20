@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import "./AuthDark.css";
-import logo from "../assets/logo.jpeg";
+import logo from "../assets/nexup.png";
 
 
 function Login() {
