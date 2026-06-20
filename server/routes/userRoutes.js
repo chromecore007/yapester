@@ -7,7 +7,7 @@ const protect = require("../middleware/authMiddleware");
 router.get("/me", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .select("_id name username email profilePic");
+      .select("_id name username email profilePic bio");
 
     res.json(user);
   } catch (error) {
@@ -15,18 +15,49 @@ router.get("/me", protect, async (req, res) => {
   }
 });
 
+/* ================= UPDATE PROFILE ================= */
+router.put("/edit", protect, async (req, res) => {
+  try {
+    const { name, username, bio } = req.body;
+
+    const existingUser = await User.findOne({
+      username,
+      _id: { $ne: req.user._id },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Username already taken",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    user.name = name || user.name;
+    user.username = username || user.username;
+    user.bio = bio || user.bio;
+
+    await user.save();
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Failed to update profile",
+    });
+  }
+});
+
+/* ================= PROFILE PIC ================= */
 router.put("/profile-pic", protect, async (req, res) => {
   try {
     const { profilePic } = req.body;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      {
-        profilePic,
-      },
-      {
-        new: true,
-      }
+      { profilePic },
+      { new: true }
     ).select("-password");
 
     res.json(user);
@@ -43,7 +74,7 @@ router.put("/profile-pic", protect, async (req, res) => {
 router.get("/", protect, async (req, res) => {
   try {
     const users = await User.find()
-     .select("_id name username email profilePic");
+      .select("_id name username email profilePic bio");
 
     res.json(users);
   } catch (error) {

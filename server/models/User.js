@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
   type: String,
   default: "",
 },
+bio: {
+  type: String,
+  default: "Stay positive, work hard 👋",
+},
   },
   { timestamps: true }
 );
