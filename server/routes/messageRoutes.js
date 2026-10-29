@@ -1,4 +1,4 @@
-```javascript
+
 const express = require("express");
 const router = express.Router();
 
@@ -488,4 +488,3 @@ router.post("/analyze-mood", protect, async (req, res) => {
 });
 
 module.exports = router;
-```
